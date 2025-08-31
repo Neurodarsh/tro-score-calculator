@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TBI-ROTEM Prognostic (TRP) Score Calculator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: #f4f7f9;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background: #ffffff;
+            padding: 25px 35px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #1a237e;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        p.subtitle {
+            text-align: center;
+            margin-top: 0;
+            color: #555;
+            font-size: 0.9em;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .form-group legend {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #3f51b5;
+            padding: 0 10px;
+        }
+        .radio-option {
+            display: block;
+            margin: 10px 0;
+            position: relative;
+            padding-left: 30px;
+            cursor: pointer;
+        }
+        .radio-option input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .checkmark {
+            position: absolute;
+            top: 2px;
+            left: 0;
+            height: 20px;
+            width: 20px;
+            background-color: #eee;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+        }
+        .radio-option:hover input ~ .checkmark {
+            background-color: #ccc;
+        }
+        .radio-option input:checked ~ .checkmark {
+            background-color: #3f51b5;
+        }
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+        .radio-option input:checked ~ .checkmark:after {
+            display: block;
+        }
+        .radio-option .checkmark:after {
+            top: 6px;
+            left: 6px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: white;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+        button {
+            padding: 12px 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        button#calculate-btn {
+            background-color: #3f51b5;
+            color: white;
+            margin-right: 10px;
+        }
+        button#calculate-btn:hover {
+            background-color: #303f9f;
+        }
+        button#reset-btn {
+            background-color: #757575;
+            color: white;
+        }
+        button#reset-btn:hover {
+            background-color: #616161;
+        }
+        button:active {
+            transform: translateY(1px);
+        }
+        #results {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.1em;
+            display: none; /* Hidden by default */
+        }
+        .result-low { background-color: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
+        .result-moderate { background-color: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+        .result-high { background-color: #ffebee; color: #b71c1c; border: 1px solid #ef9a9a; }
+        .result-veryhigh { background-color: #212121; color: #f5f5f5; border: 1px solid #424242; }
+        .disclaimer {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #fffde7;
+            border: 1px solid #fff9c4;
+            border-left: 5px solid #fbc02d;
+            font-size: 0.9em;
+            color: #5d4037;
+            border-radius: 4px;
+        }
+        .disclaimer strong {
+            color: #d84315;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>TBI-ROTEM Prognostic (TRP) Score</h1>
+        <p class="subtitle">An integrated score for predicting outcome in Traumatic Brain Injury.</p>
+
+        <form id="trp-form">
+            <fieldset class="form-group">
+                <legend>1. GCS on Admission</legend>
+                <label class="radio-option">13-15 (Mild)
+                    <input type="radio" name="gcs" value="0" required>
+                    <span class="checkmark"></span>
+                </label>
+                <label class="radio-option">9-12 (Moderate)
+                    <input type="radio" name="gcs" value="1">
+                    <span class="checkmark"></span>
+                </label>
+                <label class="radio-option">&lt;=8 (Severe)
+                    <input type="radio" name="gcs" value="3">
+                    <span class="checkmark"></span>
+                </label>
+            </fieldset>
+
+            <fieldset class="form-group">
+                <legend>2. Rotterdam CT Score</legend>
+                <label class="radio-option">1-2
+                    <input type="radio" name="rotterdam" value="0" required>
+                    <span class="checkmark"></span>
+                </label>
+                <label class="radio-option">3-4
+                    <input type="radio" name="rotterdam" value="2">
+                    <span class="checkmark"></span>
+                </label>
+                <label class="radio-option">5-6
+                    <input type="radio" name="rotterdam" value="4">
+                    <span class="checkmark"></span>
+                </label>
+            </fieldset>
+
+            <fieldset class="form-group">
+                <legend>3. Contusion Index</legend>
+                <label class="radio-option">0-3
+                    <input type="radio" name="contusion" value="0" required>
+                    <span class="checkmark"></span>
+                </label>
+                <label class="radio-option">4-6
+                    <input type="radio" name="contusion" value="2">
+                    <span class="checkmark"></span>
+                </label>
+                <label class="radio-option">&gt;6
+                    <input type="radio" name="contusion" value="4">
+                    <span class="checkmark"></span>
+                </label>
+            </fieldset>
+
+            <fieldset class="form-group">
+                <legend>4. Admission Hemoglobin</legend>
+                <label class="radio-option">&gt;12 g/dL
+                    <input type="radio" name="hemoglobin" value="0" required>
+                    <span class="checkmark"></span>
+                </label>
+                <label class="radio-option">10-12 g/dL
+                    <input type="radio" name="hemoglobin" value="1">
+                    <span class="checkmark"></span>
+                </label>
+                <label class="radio-option">&lt;10 g/dL
+                    <input type="radio" name="hemoglobin" value="2">
+                    <span class="checkmark"></span>
+                </label>
+            </fieldset>
+
+            <fieldset class="form-group">
+                <legend>5. ROTEM Profile (Use highest scoring abnormality)</legend>
+                <label class="radio-option">All Normal
+                    <input type="radio" name="rotem" value="0" required>
+                    <span class="checkmark"></span>
+                </label>
+                <label class="radio-option">Isolated INTEM/EXTEM Abnormality
+                    <input type="radio" name="rotem" value="1">
+                    <span class="checkmark"></span>
+                </label>
+                <label class="radio-option">Abnormal FIBTEM (A5 &lt; 9mm)
+                    <input type="radio" name="rotem" value="3">
+                    <span class="checkmark"></span>
+                </label>
+            </fieldset>
+
+            <div class="button-container">
+                <button type="button" id="calculate-btn">Calculate TRP Score</button>
+                <button type="button" id="reset-btn">Reset</button>
+            </div>
+        </form>
+
+        <div id="results"></div>
+
+        <div class="disclaimer">
+            <strong>Disclaimer:</strong> This tool is intended for educational and informational purposes only and is based on the TBI-ROTEM Prognostic (TRP) Score from the provided study. It is not a substitute for professional medical advice, diagnosis, or treatment. All clinical decisions must be made by qualified healthcare professionals based on a comprehensive evaluation of the patient.
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('calculate-btn').addEventListener('click', calculateTRP);
+        document.getElementById('reset-btn').addEventListener('click', resetForm);
+
+        function calculateTRP() {
+            const form = document.getElementById('trp-form');
+            if (!form.checkValidity()) {
+                alert('Please complete all fields before calculating the score.');
+                return;
+            }
+
+            let totalScore = 0;
+            const selectors = ['gcs', 'rotterdam', 'contusion', 'hemoglobin', 'rotem'];
+            
+            selectors.forEach(selector => {
+                const selectedValue = document.querySelector(`input[name="${selector}"]:checked`).value;
+                totalScore += parseInt(selectedValue);
+            });
+
+            displayResults(totalScore);
+        }
+
+        function displayResults(score) {
+            const resultsDiv = document.getElementById('results');
+            let interpretation = '';
+            let riskClass = '';
+
+            if (score <= 3) {
+                riskClass = 'result-low';
+                interpretation = `<strong>Total TRP Score: ${score}</strong><br><strong>Risk Category: Low Risk</strong><br>Associated with a <10% risk of unfavorable outcome (GOS 3-5) and approximately 0-2% mortality.`;
+            } else if (score >= 4 && score <= 7) {
+                riskClass = 'result-moderate';
+                interpretation = `<strong>Total TRP Score: ${score}</strong><br><strong>Risk Category: Moderate Risk</strong><br>Associated with a 20-50% risk of unfavorable outcome (GOS 3-5) and approximately 5-15% mortality.`;
+            } else if (score >= 8 && score <= 11) {
+                riskClass = 'result-high';
+                interpretation = `<strong>Total TRP Score: ${score}</strong><br><strong>Risk Category: High Risk</strong><br>Associated with a 50-85% risk of unfavorable outcome (GOS 3-5) and approximately 40-60% mortality.`;
+            } else { // score > 11
+                riskClass = 'result-veryhigh';
+                interpretation = `<strong>Total TRP Score: ${score}</strong><br><strong>Risk Category: Very High Risk</strong><br>Associated with a >85% risk of unfavorable outcome (GOS 3-5) and approximately 75-95% mortality.`;
+            }
+
+            resultsDiv.innerHTML = interpretation;
+            resultsDiv.className = ''; // Reset classes
+            resultsDiv.classList.add(riskClass);
+            resultsDiv.style.display = 'block';
+        }
+
+        function resetForm() {
+            document.getElementById('trp-form').reset();
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'none';
+            resultsDiv.innerHTML = '';
+            resultsDiv.className = '';
+        }
+    </script>
+</body>
+</html>
